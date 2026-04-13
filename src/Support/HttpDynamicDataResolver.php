@@ -32,10 +32,10 @@ class HttpDynamicDataResolver implements DynamicDataResolver
         $valuePath = (string) ($source['value_path'] ?? 'key');
 
         /** @var mixed $items */
-        $items = data_get($response, $itemsPath);
+        $items = $itemsPath === '' ? $response : data_get($response, $itemsPath);
 
         if ( ! is_array($items)) {
-            return [];
+            throw DynamicDataRequestException::invalidResponseShape($this->resolveEndpoint((string) ($source['endpoint'] ?? '')), $itemsPath, $labelPath, $valuePath);
         }
 
         $resolved = [];
@@ -49,6 +49,10 @@ class HttpDynamicDataResolver implements DynamicDataResolver
 
             $label = $this->extractOptionPart($item, $itemKey, $labelPath, true);
             $resolved[(string) $value] = is_scalar($label) ? (string) $label : (string) $value;
+        }
+
+        if ($resolved === [] && $items !== []) {
+            throw DynamicDataRequestException::invalidResponseShape($this->resolveEndpoint((string) ($source['endpoint'] ?? '')), $itemsPath, $labelPath, $valuePath);
         }
 
         return $resolved;

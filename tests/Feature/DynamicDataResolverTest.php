@@ -116,6 +116,38 @@ test('http dynamic resolver supports relative endpoints', function (): void {
     ]);
 });
 
+test('http dynamic resolver resolves dynamic options from root array responses', function (): void {
+    Http::fake([
+        'https://jsonplaceholder.typicode.com/users*' => Http::response([
+            ['id' => 1, 'name' => 'Leanne Graham'],
+            ['id' => 2, 'name' => 'Ervin Howell'],
+        ]),
+    ]);
+
+    $resolver = new HttpDynamicDataResolver();
+
+    $field = [
+        'key' => 'bank_id',
+        'option_properties' => [
+            'source' => [
+                'enabled' => true,
+                'endpoint' => 'https://jsonplaceholder.typicode.com/users',
+                'method' => 'GET',
+                'items_path' => '',
+                'key_path' => 'name',
+                'value_path' => 'id',
+            ],
+        ],
+    ];
+
+    $options = $resolver->resolveDynamicOptions($field, [], []);
+
+    expect($options)->toBe([
+        '1' => 'Leanne Graham',
+        '2' => 'Ervin Howell',
+    ]);
+});
+
 test('http dynamic resolver resolves autofill payload when conditions pass', function (): void {
     Http::fake([
         'https://example.test/autofill*' => Http::response([
@@ -174,6 +206,35 @@ test('http dynamic resolver throws custom exception on non successful response',
 
     expect(fn () => $resolver->resolveDynamicOptions($field, [], []))
         ->toThrow(DynamicDataRequestException::class, 'status 401');
+});
+
+test('http dynamic resolver throws custom exception when the response cannot be mapped into options', function (): void {
+    Http::fake([
+        'https://example.test/options-invalid-shape*' => Http::response([
+            'data' => [
+                ['unexpected' => 'value'],
+            ],
+        ]),
+    ]);
+
+    $resolver = new HttpDynamicDataResolver();
+
+    $field = [
+        'key' => 'bank_id',
+        'option_properties' => [
+            'source' => [
+                'enabled' => true,
+                'endpoint' => 'https://example.test/options-invalid-shape',
+                'method' => 'GET',
+                'items_path' => 'data',
+                'key_path' => 'name',
+                'value_path' => 'id',
+            ],
+        ],
+    ];
+
+    expect(fn () => $resolver->resolveDynamicOptions($field, [], []))
+        ->toThrow(DynamicDataRequestException::class, 'could not be mapped into options');
 });
 
 test('http dynamic resolver throws custom exception on transport failure', function (): void {

@@ -28,4 +28,15 @@ class DynamicDataRequestException extends RuntimeException
             $exception->getMessage(),
         ), previous: $exception);
     }
+
+    public static function invalidResponseShape(string $endpoint, string $itemsPath, string $labelPath, string $valuePath): self
+    {
+        return new self(sprintf(
+            'Dynamic response from [%s] could not be mapped into options using items_path="%s", key_path="%s", value_path="%s".',
+            $endpoint,
+            $itemsPath,
+            $labelPath,
+            $valuePath,
+        ));
+    }
 }
