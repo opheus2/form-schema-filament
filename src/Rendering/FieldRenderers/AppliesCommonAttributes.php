@@ -16,14 +16,13 @@ trait AppliesCommonAttributes
     protected function applyCommon(Field $component, array $field, RendererContext $context): Field
     {
         $fieldKey = (string) ($field['key'] ?? '');
+        $isReadonly = (bool) ($field['readonly'] ?? false);
 
-        return $component
+        $component
             ->label(is_string($field['label'] ?? null) ? $field['label'] : null)
             ->helperText(is_string($field['help_text'] ?? null) ? $field['help_text'] : null)
             ->required((bool) ($field['required'] ?? false))
-            ->readOnly((bool) ($field['readonly'] ?? false))
             ->hiddenLabel(false)
-            ->placeholder(is_string($field['placeholder'] ?? null) ? $field['placeholder'] : null)
             ->default($field['default'] ?? null)
             ->live()
             ->visible(function (Get $get) use ($field, $context): bool {
@@ -39,6 +38,20 @@ trait AppliesCommonAttributes
 
                 $component->state($field['default']);
             });
+
+        if (is_string($field['placeholder'] ?? null) && method_exists($component, 'placeholder')) {
+            $component->placeholder($field['placeholder']);
+        }
+
+        if ($isReadonly) {
+            if (method_exists($component, 'readOnly')) {
+                $component->readOnly(true);
+            } elseif (method_exists($component, 'disabled')) {
+                $component->disabled(true);
+            }
+        }
+
+        return $component;
     }
 
     /**
@@ -48,11 +61,11 @@ trait AppliesCommonAttributes
     {
         $ui = (array) ($field['ui'] ?? []);
 
-        if (is_string($ui['prefix'] ?? null) && $ui['prefix'] !== '') {
+        if (is_string($ui['prefix'] ?? null) && $ui['prefix'] !== '' && method_exists($component, 'prefix')) {
             $component->prefix($ui['prefix']);
         }
 
-        if (is_string($ui['suffix'] ?? null) && $ui['suffix'] !== '') {
+        if (is_string($ui['suffix'] ?? null) && $ui['suffix'] !== '' && method_exists($component, 'suffix')) {
             $component->suffix($ui['suffix']);
         }
 
