@@ -57,3 +57,42 @@ test('renders wizard for multi-page schema', function (): void {
     expect($components)->toHaveCount(1)
         ->and($components[0])->toBeInstanceOf(Wizard::class);
 });
+
+test('renders options field with dynamic source and empty static data', function (): void {
+    $renderer = app(FilamentSchemaRenderer::class);
+
+    $schema = [
+        'version' => '1.0',
+        'form' => [
+            'name' => 'Dynamic Options',
+            'key' => 'dynamic-options',
+            'pages' => [[
+                'key' => 'page_1',
+                'sections' => [[
+                    'key' => 'section_1',
+                    'fields' => [[
+                        'key' => 'bank_id',
+                        'type' => 'options',
+                        'label' => 'Bank',
+                        'option_properties' => [
+                            'type' => 'select',
+                            'data' => [],
+                            'source' => [
+                                'enabled' => true,
+                                'endpoint' => 'https://jsonplaceholder.typicode.com/users',
+                                'method' => 'GET',
+                                'items_path' => '',
+                                'key_path' => 'name',
+                                'value_path' => 'id',
+                            ],
+                        ],
+                    ]],
+                ]],
+            ]],
+        ],
+    ];
+
+    $components = $renderer->render($schema);
+
+    expect($components)->toHaveCount(1);
+});
