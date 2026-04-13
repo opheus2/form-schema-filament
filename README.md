@@ -69,6 +69,30 @@ FormSchemaFilamentPlugin::make()
     ->registerFieldRenderer('my-custom-field', App\Support\Filament\MyFieldRenderer::class);
 ```
 
+## Dynamic Options, Autofill, and Validation Response
+
+The package now supports dynamic runtime fetches for:
+
+- `option_properties.source` (dynamic options)
+- `autofill`
+- `validation_response`
+
+By default, this uses an HTTP resolver (`Http::get` / `Http::post`) that reads schema `endpoint`, `method`, `headers`, `params`, `when`, and response mapping paths.
+
+If you want full control, provide your own resolver class:
+
+```php
+use FormSchema\Filament\FormSchemaFilamentPlugin;
+use FormSchema\Filament\Contracts\DynamicDataResolver;
+
+$panel->plugins([
+    FormSchemaFilamentPlugin::make()
+        ->dynamicDataResolver(App\Support\FormSchema\CustomDynamicDataResolver::class),
+]);
+```
+
+Your resolver should implement `FormSchema\Filament\Contracts\DynamicDataResolver`.
+
 ## Tests
 
 ```bash

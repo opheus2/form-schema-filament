@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FormSchema\Filament\Rendering;
 
+use FormSchema\Filament\Contracts\DynamicDataResolver;
 use FormSchema\Filament\Schema\SchemaInput;
 use FormSchema\Filament\Conditions\ConditionEngine;
 
@@ -13,6 +14,7 @@ class RendererContext
         public readonly SchemaInput $schema,
         public readonly string $statePath,
         public readonly ConditionEngine $conditionEngine,
+        public readonly DynamicDataResolver $dynamicDataResolver,
     ) {}
 
     public function dot(string $fieldKey): string

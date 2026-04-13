@@ -10,6 +10,7 @@ use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Components\Utilities\Get;
 use FormSchema\Filament\Schema\SchemaInput;
+use FormSchema\Filament\Contracts\DynamicDataResolver;
 use FormSchema\Filament\Conditions\ConditionEngine;
 use FormSchema\Filament\Rendering\FieldRendererRegistry;
 use FormSchema\Filament\State\SubmissionPayloadExtractor;
@@ -24,6 +25,7 @@ class FilamentSchemaRenderer
         private readonly SchemaLoader $loader,
         private readonly FieldRendererRegistry $registry,
         private readonly ConditionEngine $conditionEngine,
+        private readonly DynamicDataResolver $dynamicDataResolver,
         private readonly ValidationRuleMapper $ruleMapper,
         private readonly SubmissionPayloadExtractor $payloadExtractor,
         private readonly bool $failOnUnsupported = true,
@@ -44,7 +46,7 @@ class FilamentSchemaRenderer
         }
 
         $input = $this->loader->fromCanonical($schema);
-        $context = new RendererContext($input, $statePath, $this->conditionEngine);
+        $context = new RendererContext($input, $statePath, $this->conditionEngine, $this->dynamicDataResolver);
 
         if (count($input->pages) > 1) {
             return [$this->buildWizard($input, $context)];

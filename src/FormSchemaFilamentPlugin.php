@@ -13,6 +13,11 @@ class FormSchemaFilamentPlugin implements Plugin
 {
     private bool $failOnUnsupportedFields = true;
 
+    /**
+     * @var class-string|null
+     */
+    private ?string $dynamicDataResolver = null;
+
     public static function make(): static
     {
         return new static();
@@ -26,6 +31,10 @@ class FormSchemaFilamentPlugin implements Plugin
     public function register(Panel $panel): void
     {
         config()->set('form-schema-filament.fail_on_unsupported_fields', $this->failOnUnsupportedFields);
+
+        if (is_string($this->dynamicDataResolver) && $this->dynamicDataResolver !== '') {
+            config()->set('form-schema-filament.dynamic_data_resolver', $this->dynamicDataResolver);
+        }
     }
 
     public function boot(Panel $panel): void
@@ -45,6 +54,16 @@ class FormSchemaFilamentPlugin implements Plugin
         /** @var FieldRendererRegistry $registry */
         $registry = app(FieldRendererRegistry::class);
         $registry->register($type, $renderer);
+
+        return $this;
+    }
+
+    /**
+     * @param  class-string  $resolver
+     */
+    public function dynamicDataResolver(string $resolver): static
+    {
+        $this->dynamicDataResolver = $resolver;
 
         return $this;
     }
