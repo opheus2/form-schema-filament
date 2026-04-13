@@ -7,6 +7,7 @@ namespace FormSchema\Filament\Support;
 use Throwable;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\URL;
 use FormSchema\Filament\Contracts\DynamicDataResolver;
 
 class HttpDynamicDataResolver implements DynamicDataResolver
@@ -26,8 +27,8 @@ class HttpDynamicDataResolver implements DynamicDataResolver
         }
 
         $itemsPath = (string) ($source['items_path'] ?? 'data');
-        $keyPath = (string) ($source['key_path'] ?? 'key');
-        $valuePath = (string) ($source['value_path'] ?? 'value');
+        $labelPath = (string) ($source['key_path'] ?? 'value');
+        $valuePath = (string) ($source['value_path'] ?? 'key');
 
         /** @var mixed $items */
         $items = data_get($response, $itemsPath);
@@ -38,19 +39,15 @@ class HttpDynamicDataResolver implements DynamicDataResolver
 
         $resolved = [];
 
-        foreach ($items as $item) {
-            if ( ! is_array($item)) {
+        foreach ($items as $itemKey => $item) {
+            $value = $this->extractOptionPart($item, $itemKey, $valuePath, false);
+
+            if ( ! is_scalar($value) || '' === (string) $value) {
                 continue;
             }
 
-            $key = data_get($item, $keyPath);
-
-            if ( ! is_scalar($key) || '' === (string) $key) {
-                continue;
-            }
-
-            $value = data_get($item, $valuePath, $key);
-            $resolved[(string) $key] = is_scalar($value) ? (string) $value : (string) $key;
+            $label = $this->extractOptionPart($item, $itemKey, $labelPath, true);
+            $resolved[(string) $value] = is_scalar($label) ? (string) $label : (string) $value;
         }
 
         return $resolved;
@@ -89,7 +86,7 @@ class HttpDynamicDataResolver implements DynamicDataResolver
      */
     private function request(array $config, array $state): ?array
     {
-        $endpoint = (string) ($config['endpoint'] ?? '');
+        $endpoint = $this->resolveEndpoint((string) ($config['endpoint'] ?? ''));
 
         if ('' === $endpoint) {
             return null;
@@ -167,6 +164,79 @@ class HttpDynamicDataResolver implements DynamicDataResolver
     private function isEnabled(array $config): bool
     {
         return (bool) ($config['enabled'] ?? false);
+    }
+
+    /**
+     * @param  int|string  $itemKey
+     */
+    private function extractOptionPart(mixed $item, int|string $itemKey, string $path, bool $isLabel): mixed
+    {
+        if ('*' === $path) {
+            if ($isLabel) {
+                if (is_scalar($item)) {
+                    return $item;
+                }
+
+                if (is_array($item)) {
+                    foreach (['label', 'name', 'value', 'title', 'key'] as $candidate) {
+                        $candidateValue = data_get($item, $candidate);
+
+                        if (is_scalar($candidateValue) && '' !== (string) $candidateValue) {
+                            return $candidateValue;
+                        }
+                    }
+
+                    foreach ($item as $candidateValue) {
+                        if (is_scalar($candidateValue) && '' !== (string) $candidateValue) {
+                            return $candidateValue;
+                        }
+                    }
+                }
+
+                return is_scalar($itemKey) ? $itemKey : null;
+            }
+
+            if (is_scalar($itemKey) && '' !== (string) $itemKey) {
+                return $itemKey;
+            }
+
+            if (is_array($item)) {
+                foreach (['key', 'id', 'code', 'value'] as $candidate) {
+                    $candidateValue = data_get($item, $candidate);
+
+                    if (is_scalar($candidateValue) && '' !== (string) $candidateValue) {
+                        return $candidateValue;
+                    }
+                }
+            }
+
+            return is_scalar($item) ? $item : null;
+        }
+
+        if (is_array($item)) {
+            return data_get($item, $path);
+        }
+
+        return null;
+    }
+
+    private function resolveEndpoint(string $endpoint): string
+    {
+        if ('' === $endpoint) {
+            return '';
+        }
+
+        if (str_starts_with($endpoint, 'http://') || str_starts_with($endpoint, 'https://')) {
+            return $endpoint;
+        }
+
+        $appUrl = config('app.url');
+
+        if (is_string($appUrl) && '' !== $appUrl) {
+            return rtrim($appUrl, '/') . '/' . ltrim($endpoint, '/');
+        }
+
+        return URL::to($endpoint);
     }
 
     /**

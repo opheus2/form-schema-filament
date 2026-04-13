@@ -32,7 +32,7 @@ class FilamentSchemaRenderer
 
     /**
      * @param  array<string, mixed>  $schema
-     * @return array<int, Component>
+    * @return array<int, \Filament\Schemas\Components\Component>
      */
     public function render(array $schema, ?string $statePath = null): array
     {
@@ -101,7 +101,7 @@ class FilamentSchemaRenderer
 
     /**
      * @param  array<string, mixed>  $page
-     * @return array<int, Component>
+    * @return array<int, \Filament\Schemas\Components\Component>
      */
     private function buildPageComponents(array $page, RendererContext $context): array
     {
