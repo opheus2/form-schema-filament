@@ -9,6 +9,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\URL;
 use FormSchema\Filament\Contracts\DynamicDataResolver;
+use FormSchema\Filament\Exceptions\DynamicDataRequestException;
 
 class HttpDynamicDataResolver implements DynamicDataResolver
 {
@@ -103,16 +104,14 @@ class HttpDynamicDataResolver implements DynamicDataResolver
                 : $request->get($endpoint, $params);
 
             if ( ! $response->successful()) {
-                return null;
+                throw DynamicDataRequestException::fromHttpFailure($method, $endpoint, $response->status());
             }
 
             $json = $response->json();
 
             return is_array($json) ? $json : null;
         } catch (Throwable $exception) {
-            report($exception);
-
-            return null;
+            throw DynamicDataRequestException::fromThrowable($method, $endpoint, $exception);
         }
     }
 

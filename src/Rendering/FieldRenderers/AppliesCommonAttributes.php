@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FormSchema\Filament\Rendering\FieldRenderers;
 
 use Filament\Forms\Components\Field;
+use Throwable;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use FormSchema\Filament\Rendering\RendererContext;
@@ -18,10 +19,25 @@ trait AppliesCommonAttributes
     {
         $fieldKey = (string) ($field['key'] ?? '');
         $isReadonly = (bool) ($field['readonly'] ?? false);
+        $baseHelperText = is_string($field['help_text'] ?? null) ? $field['help_text'] : null;
 
         $component
             ->label(is_string($field['label'] ?? null) ? $field['label'] : null)
-            ->helperText(is_string($field['help_text'] ?? null) ? $field['help_text'] : null)
+            ->helperText(function (Get $get) use ($baseHelperText, $fieldKey, $context): ?string {
+                /** @var array<string, mixed> $state */
+                $state = (array) ($get($context->statePath) ?? []);
+                $dynamicError = data_get($state, '__runtime_errors.' . $fieldKey);
+
+                if (! is_string($dynamicError) || $dynamicError === '') {
+                    return $baseHelperText;
+                }
+
+                if (is_string($baseHelperText) && $baseHelperText !== '') {
+                    return $baseHelperText . ' | ' . $dynamicError;
+                }
+
+                return $dynamicError;
+            })
             ->required((bool) ($field['required'] ?? false))
             ->hiddenLabel(false)
             ->default($field['default'] ?? null)
@@ -44,6 +60,8 @@ trait AppliesCommonAttributes
                     return;
                 }
 
+                $set($context->dot('__runtime_errors.' . $fieldKey), null);
+
                 /** @var array<string, mixed> $state */
                 $state = (array) ($get($context->statePath) ?? []);
                 $value = data_get($state, $fieldKey);
@@ -51,15 +69,23 @@ trait AppliesCommonAttributes
                 $autofill = (array) ($field['autofill'] ?? []);
 
                 if ((bool) ($autofill['enabled'] ?? false)) {
-                    $response = $context->dynamicDataResolver->resolveAutofill($field, $context->schema->schema, $state, $value);
-                    $this->applyMapTargets($response, (array) ($autofill['map'] ?? []), $set, $context);
+                    try {
+                        $response = $context->dynamicDataResolver->resolveAutofill($field, $context->schema->schema, $state, $value);
+                        $this->applyMapTargets($response, (array) ($autofill['map'] ?? []), $set, $context);
+                    } catch (Throwable $exception) {
+                        $set($context->dot('__runtime_errors.' . $fieldKey), $this->formatDynamicRuntimeError($exception));
+                    }
                 }
 
                 $validationResponse = (array) ($field['validation_response'] ?? []);
 
                 if ((bool) ($validationResponse['enabled'] ?? false)) {
-                    $response = $context->dynamicDataResolver->resolveValidationResponse($field, $context->schema->schema, $state, $value);
-                    $this->applyMapTargets($response, (array) ($validationResponse['map'] ?? []), $set, $context);
+                    try {
+                        $response = $context->dynamicDataResolver->resolveValidationResponse($field, $context->schema->schema, $state, $value);
+                        $this->applyMapTargets($response, (array) ($validationResponse['map'] ?? []), $set, $context);
+                    } catch (Throwable $exception) {
+                        $set($context->dot('__runtime_errors.' . $fieldKey), $this->formatDynamicRuntimeError($exception));
+                    }
                 }
             });
 
@@ -108,6 +134,15 @@ trait AppliesCommonAttributes
 
             $set($context->dot($target), $value);
         }
+    }
+
+    private function formatDynamicRuntimeError(Throwable $exception): string
+    {
+        if (app()->isProduction()) {
+            return 'Dynamic lookup failed. Please verify endpoint configuration.';
+        }
+
+        return $exception->getMessage();
     }
 
     /**

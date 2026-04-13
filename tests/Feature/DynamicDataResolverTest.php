@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\URL;
+use FormSchema\Filament\Exceptions\DynamicDataRequestException;
 use FormSchema\Filament\Support\HttpDynamicDataResolver;
 
 test('http dynamic resolver resolves dynamic options from source config', function (): void {
@@ -146,4 +147,56 @@ test('http dynamic resolver resolves autofill payload when conditions pass', fun
     expect($response)->toBe([
         'data' => ['account_name' => 'Ada Lovelace'],
     ]);
+});
+
+test('http dynamic resolver throws custom exception on non successful response', function (): void {
+    Http::fake([
+        'https://example.test/options-fail*' => Http::response([
+            'message' => 'unauthorized',
+        ], 401),
+    ]);
+
+    $resolver = new HttpDynamicDataResolver();
+
+    $field = [
+        'key' => 'bank_id',
+        'option_properties' => [
+            'source' => [
+                'enabled' => true,
+                'endpoint' => 'https://example.test/options-fail',
+                'method' => 'GET',
+                'items_path' => 'data',
+                'key_path' => 'name',
+                'value_path' => 'code',
+            ],
+        ],
+    ];
+
+    expect(fn () => $resolver->resolveDynamicOptions($field, [], []))
+        ->toThrow(DynamicDataRequestException::class, 'status 401');
+});
+
+test('http dynamic resolver throws custom exception on transport failure', function (): void {
+    Http::fake(function (): never {
+        throw new RuntimeException('Connection timed out');
+    });
+
+    $resolver = new HttpDynamicDataResolver();
+
+    $field = [
+        'key' => 'bank_id',
+        'option_properties' => [
+            'source' => [
+                'enabled' => true,
+                'endpoint' => 'https://example.test/options-timeout',
+                'method' => 'GET',
+                'items_path' => 'data',
+                'key_path' => 'name',
+                'value_path' => 'code',
+            ],
+        ],
+    ];
+
+    expect(fn () => $resolver->resolveDynamicOptions($field, [], []))
+        ->toThrow(DynamicDataRequestException::class, 'Connection timed out');
 });

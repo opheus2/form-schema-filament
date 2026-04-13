@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FormSchema\Filament\Rendering\FieldRenderers;
 
+use Throwable;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Schemas\Components\Component;
@@ -15,6 +16,8 @@ use FormSchema\Filament\Rendering\RendererContext;
 class OptionsFieldRenderer implements FieldRenderer
 {
     use AppliesCommonAttributes;
+
+    private const DYNAMIC_ERROR_OPTION_KEY = '__dynamic_error__';
 
     /**
      * @param  array<string, mixed>  $field
@@ -40,14 +43,28 @@ class OptionsFieldRenderer implements FieldRenderer
                 /** @var array<string, mixed> $state */
                 $state = (array) ($get($context->statePath) ?? []);
 
-                $resolved = $context->dynamicDataResolver->resolveDynamicOptions($field, $context->schema->schema, $state);
+                try {
+                    $resolved = $context->dynamicDataResolver->resolveDynamicOptions($field, $context->schema->schema, $state);
 
-                if ( ! is_array($resolved)) {
-                    return $options;
+                    if ( ! is_array($resolved)) {
+                        return $options;
+                    }
+
+                    return $this->normalizeOptions($resolved);
+                } catch (Throwable $exception) {
+                    $errorMessage = app()->isProduction()
+                        ? 'Dynamic options request failed.'
+                        : $exception->getMessage();
+
+                    return [
+                        self::DYNAMIC_ERROR_OPTION_KEY => $errorMessage,
+                    ] + $options;
                 }
-
-                return $this->normalizeOptions($resolved);
             });
+
+            if (method_exists($component, 'disableOptionWhen')) {
+                $component->disableOptionWhen(fn (string $value): bool => self::DYNAMIC_ERROR_OPTION_KEY === $value);
+            }
         }
 
         return $this->applyCommon($component, $field, $context);
