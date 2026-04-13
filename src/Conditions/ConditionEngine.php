@@ -16,7 +16,7 @@ class ConditionEngine
     {
         $key = is_string($field['key'] ?? null) ? $field['key'] : null;
 
-        if ($key === null) {
+        if (null === $key) {
             return true;
         }
 
@@ -27,7 +27,7 @@ class ConditionEngine
         }
 
         foreach ($this->allConditionals($schema) as $conditional) {
-            if (! $this->targetsNode($conditional, 'field', $key, null)) {
+            if ( ! $this->targetsNode($conditional, 'field', $key, null)) {
                 continue;
             }
 
@@ -47,14 +47,14 @@ class ConditionEngine
     {
         $key = is_string($section['key'] ?? null) ? $section['key'] : null;
 
-        if ($key === null) {
+        if (null === $key) {
             return true;
         }
 
         $visible = ! ((bool) ($section['hidden'] ?? false));
 
         foreach ($this->allConditionals($schema) as $conditional) {
-            if (! $this->targetsNode($conditional, 'section', $key, $pageKey)) {
+            if ( ! $this->targetsNode($conditional, 'section', $key, $pageKey)) {
                 continue;
             }
 
@@ -74,14 +74,14 @@ class ConditionEngine
     {
         $key = is_string($page['key'] ?? null) ? $page['key'] : null;
 
-        if ($key === null) {
+        if (null === $key) {
             return true;
         }
 
         $visible = ! ((bool) ($page['hidden'] ?? false));
 
         foreach ($this->allConditionals($schema) as $conditional) {
-            if (! $this->targetsNode($conditional, 'page', $key, null)) {
+            if ( ! $this->targetsNode($conditional, 'page', $key, null)) {
                 continue;
             }
 
@@ -105,14 +105,14 @@ class ConditionEngine
 
         $allPass = true;
         foreach ($all as $condition) {
-            if (! is_array($condition) || ! $this->evaluateVisibleCondition($condition, $state)) {
+            if ( ! is_array($condition) || ! $this->evaluateVisibleCondition($condition, $state)) {
                 $allPass = false;
                 break;
             }
         }
 
         $anyPass = true;
-        if ($any !== []) {
+        if ([] !== $any) {
             $anyPass = false;
             foreach ($any as $condition) {
                 if (is_array($condition) && $this->evaluateVisibleCondition($condition, $state)) {
@@ -123,7 +123,7 @@ class ConditionEngine
         }
 
         $notPass = true;
-        if (is_array($not) && $not !== []) {
+        if (is_array($not) && [] !== $not) {
             $notPass = ! $this->evaluateVisibleCondition($not, $state);
         }
 
@@ -174,7 +174,7 @@ class ConditionEngine
         $targets = (array) ($conditional['then']['targets'] ?? []);
 
         foreach ($targets as $target) {
-            if (! is_array($target)) {
+            if ( ! is_array($target)) {
                 continue;
             }
 
@@ -186,7 +186,7 @@ class ConditionEngine
                 continue;
             }
 
-            if ($targetType === 'section' && $pageKey !== null && ($target['pageKey'] ?? null) !== $pageKey) {
+            if ('section' === $targetType && null !== $pageKey && ($target['pageKey'] ?? null) !== $pageKey) {
                 continue;
             }
 
@@ -236,8 +236,8 @@ class ConditionEngine
     private function evaluateOperator(string $operator, mixed $left, mixed $right, array $condition): bool
     {
         return match ($operator) {
-            'is', '==' => $left == $right,
-            'is_not', '!=' => $left != $right,
+            'is', '==' => $left === $right,
+            'is_not', '!=' => $left !== $right,
             '>', 'gt' => is_numeric($left) && is_numeric($right) && ((float) $left > (float) $right),
             '<', 'lt' => is_numeric($left) && is_numeric($right) && ((float) $left < (float) $right),
             '>=', 'gte' => is_numeric($left) && is_numeric($right) && ((float) $left >= (float) $right),
@@ -250,8 +250,8 @@ class ConditionEngine
             'not_ends_with' => is_string($left) && is_string($right) && ! str_ends_with($left, $right),
             'empty' => $this->isEmpty($left),
             'not_empty' => ! $this->isEmpty($left),
-            'true' => $left === true,
-            'false' => $left === false,
+            'true' => true === $left,
+            'false' => false === $left,
             'in' => is_array($right) && in_array($left, $right, true),
             'not_in' => is_array($right) && ! in_array($left, $right, true),
             'between' => $this->between($left, $right, $condition),
@@ -267,11 +267,11 @@ class ConditionEngine
      */
     private function resolveReference(mixed $value, array $state): mixed
     {
-        if (! is_string($value)) {
+        if ( ! is_string($value)) {
             return $value;
         }
 
-        if (! preg_match('/^\{field:([^}]+)\}$/', $value, $matches)) {
+        if ( ! preg_match('/^\{field:([^}]+)\}$/', $value, $matches)) {
             return $value;
         }
 
@@ -296,10 +296,10 @@ class ConditionEngine
     private function isEmpty(mixed $value): bool
     {
         if (is_array($value)) {
-            return $value === [];
+            return [] === $value;
         }
 
-        return $value === null || $value === '';
+        return null === $value || '' === $value;
     }
 
     /**
@@ -307,11 +307,11 @@ class ConditionEngine
      */
     private function between(mixed $left, mixed $right, array $condition): bool
     {
-        if (isset($condition['range']) && is_array($condition['range']) && count($condition['range']) === 2) {
+        if (isset($condition['range']) && is_array($condition['range']) && 2 === count($condition['range'])) {
             $right = array_values($condition['range']);
         }
 
-        if (! is_array($right) || count($right) < 2) {
+        if ( ! is_array($right) || count($right) < 2) {
             return false;
         }
 
@@ -332,17 +332,17 @@ class ConditionEngine
 
     private function compareDate(mixed $left, mixed $right, string $operator): bool
     {
-        if (! is_string($left) || ! is_string($right)) {
+        if ( ! is_string($left) || ! is_string($right)) {
             return false;
         }
 
         $leftTime = strtotime($left);
         $rightTime = strtotime($right);
 
-        if ($leftTime === false || $rightTime === false) {
+        if (false === $leftTime || false === $rightTime) {
             return false;
         }
 
-        return $operator === '<' ? $leftTime < $rightTime : $leftTime > $rightTime;
+        return '<' === $operator ? $leftTime < $rightTime : $leftTime > $rightTime;
     }
 }

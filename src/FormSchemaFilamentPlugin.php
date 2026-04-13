@@ -32,7 +32,7 @@ class FormSchemaFilamentPlugin implements Plugin
     {
         config()->set('form-schema-filament.fail_on_unsupported_fields', $this->failOnUnsupportedFields);
 
-        if (is_string($this->dynamicDataResolver) && $this->dynamicDataResolver !== '') {
+        if (is_string($this->dynamicDataResolver) && '' !== $this->dynamicDataResolver) {
             config()->set('form-schema-filament.dynamic_data_resolver', $this->dynamicDataResolver);
         }
     }

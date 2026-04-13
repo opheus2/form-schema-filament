@@ -10,7 +10,6 @@ class LaravelValidationRuleMapper implements ValidationRuleMapper
 {
     /**
      * @param  array<string, mixed>  $schema
-     * @param  string  $statePath
      * @return array<string, array<int, string>>
      */
     public function map(array $schema, string $statePath): array
@@ -20,7 +19,7 @@ class LaravelValidationRuleMapper implements ValidationRuleMapper
         foreach (($schema['form']['pages'] ?? []) as $page) {
             foreach (($page['sections'] ?? []) as $section) {
                 foreach (($section['fields'] ?? []) as $field) {
-                    if (! is_array($field)) {
+                    if ( ! is_array($field)) {
                         continue;
                     }
 
@@ -30,7 +29,7 @@ class LaravelValidationRuleMapper implements ValidationRuleMapper
                     }
 
                     $key = (string) ($field['key'] ?? '');
-                    if ($key === '') {
+                    if ('' === $key) {
                         continue;
                     }
 
@@ -46,9 +45,9 @@ class LaravelValidationRuleMapper implements ValidationRuleMapper
                         $this->mapValidationRules($field),
                     )));
 
-                    if ($type === 'address') {
+                    if ('address' === $type) {
                         foreach ((array) ($field['address_properties'] ?? []) as $propKey => $propConfig) {
-                            if (! is_array($propConfig)) {
+                            if ( ! is_array($propConfig)) {
                                 continue;
                             }
 
@@ -115,7 +114,7 @@ class LaravelValidationRuleMapper implements ValidationRuleMapper
             $rules[] = 'max:' . (string) $constraints['max'];
         }
 
-        if ($type === 'tag') {
+        if ('tag' === $type) {
             if (isset($constraints['min']) && is_numeric($constraints['min'])) {
                 $rules[] = 'min:' . (string) $constraints['min'];
             }
@@ -137,24 +136,26 @@ class LaravelValidationRuleMapper implements ValidationRuleMapper
         $mapped = [];
 
         foreach ((array) ($field['validations'] ?? []) as $validation) {
-            if (! is_array($validation)) {
+            if ( ! is_array($validation)) {
                 continue;
             }
 
             $rule = (string) ($validation['rule'] ?? '');
             $params = array_values((array) ($validation['params'] ?? []));
 
-            if ($rule === '') {
+            if ('' === $rule) {
                 continue;
             }
 
-            if ($params === []) {
+            if ([] === $params) {
                 $mapped[] = $this->mapRuleName($rule);
+
                 continue;
             }
 
             if (in_array($rule, ['required_if', 'required_unless', 'required_with', 'required_with_all', 'required_without', 'required_without_all', 'in', 'not_in', 'between', 'not_between', 'starts_with', 'ends_with', 'regex', 'before', 'after', 'min', 'max', 'gt', 'gte', 'lt', 'lte'], true)) {
                 $mapped[] = $this->mapRuleName($rule) . ':' . implode(',', array_map(fn (mixed $value): string => (string) $value, $params));
+
                 continue;
             }
 

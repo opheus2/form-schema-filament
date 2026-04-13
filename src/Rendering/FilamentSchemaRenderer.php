@@ -4,20 +4,19 @@ declare(strict_types=1);
 
 namespace FormSchema\Filament\Rendering;
 
-use Filament\Schemas\Components\Section;
-use FormSchema\Filament\Schema\SchemaLoader;
 use Filament\Schemas\Components\Wizard;
-use Filament\Schemas\Components\Wizard\Step;
-use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Section;
 use FormSchema\Filament\Schema\SchemaInput;
-use FormSchema\Filament\Contracts\DynamicDataResolver;
+use Filament\Schemas\Components\Wizard\Step;
+use FormSchema\Filament\Schema\SchemaLoader;
+use Filament\Schemas\Components\Utilities\Get;
 use FormSchema\Filament\Conditions\ConditionEngine;
-use FormSchema\Filament\Rendering\FieldRendererRegistry;
-use FormSchema\Filament\State\SubmissionPayloadExtractor;
-use FormSchema\Filament\Exceptions\InvalidSchemaException;
+use FormSchema\Filament\Contracts\DynamicDataResolver;
 use FormSchema\Filament\Contracts\ValidationRuleMapper;
-use FormSchema\Filament\Exceptions\UnsupportedFieldTypeException;
+use FormSchema\Filament\State\SubmissionPayloadExtractor;
 use FormSchema\Filament\Validation\SchemaValidatorBridge;
+use FormSchema\Filament\Exceptions\InvalidSchemaException;
+use FormSchema\Filament\Exceptions\UnsupportedFieldTypeException;
 
 class FilamentSchemaRenderer
 {
@@ -41,7 +40,7 @@ class FilamentSchemaRenderer
 
         $validation = app(SchemaValidatorBridge::class)->validate($schema);
 
-        if (! $validation->isValid()) {
+        if ( ! $validation->isValid()) {
             throw InvalidSchemaException::fromErrors($validation->errors());
         }
 
@@ -126,7 +125,7 @@ class FilamentSchemaRenderer
         foreach ((array) ($section['fields'] ?? []) as $field) {
             $type = (string) ($field['type'] ?? '');
 
-            if (! $this->registry->has($type)) {
+            if ( ! $this->registry->has($type)) {
                 if ($this->failOnUnsupported) {
                     throw UnsupportedFieldTypeException::make($type);
                 }

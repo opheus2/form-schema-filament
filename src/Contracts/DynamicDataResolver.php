@@ -12,7 +12,7 @@ interface DynamicDataResolver
      * @param  array<string, mixed>  $state
      * @return array<string, mixed>|array<int, array<string, mixed>>|null
      */
-    public function resolveDynamicOptions(array $field, array $schema, array $state): array|null;
+    public function resolveDynamicOptions(array $field, array $schema, array $state): ?array;
 
     /**
      * @param  array<string, mixed>  $field

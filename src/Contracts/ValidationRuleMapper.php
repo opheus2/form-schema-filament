@@ -8,7 +8,6 @@ interface ValidationRuleMapper
 {
     /**
      * @param  array<string, mixed>  $schema
-     * @param  string  $statePath
      * @return array<string, array<int, string>>
      */
     public function map(array $schema, string $statePath): array;

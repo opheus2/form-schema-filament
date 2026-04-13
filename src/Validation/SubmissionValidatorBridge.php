@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace FormSchema\Filament\Validation;
 
-use FormSchema\SubmissionValidator;
 use FormSchema\ValidationResult;
+use FormSchema\SubmissionValidator;
 
 class SubmissionValidatorBridge
 {

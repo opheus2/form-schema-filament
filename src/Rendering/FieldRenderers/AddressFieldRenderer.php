@@ -6,8 +6,8 @@ namespace FormSchema\Filament\Rendering\FieldRenderers;
 
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
-use FormSchema\Filament\Contracts\FieldRenderer;
 use Filament\Schemas\Components\Component;
+use FormSchema\Filament\Contracts\FieldRenderer;
 use FormSchema\Filament\Rendering\RendererContext;
 
 class AddressFieldRenderer implements FieldRenderer
@@ -22,7 +22,7 @@ class AddressFieldRenderer implements FieldRenderer
 
         $components = [];
         foreach ($addressProperties as $propKey => $prop) {
-            if (! is_array($prop)) {
+            if ( ! is_array($prop)) {
                 continue;
             }
 

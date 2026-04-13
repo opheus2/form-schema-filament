@@ -6,8 +6,8 @@ namespace FormSchema\Filament\Rendering\FieldRenderers;
 
 use Illuminate\Support\HtmlString;
 use Filament\Forms\Components\Placeholder;
-use FormSchema\Filament\Contracts\FieldRenderer;
 use Filament\Schemas\Components\Component;
+use FormSchema\Filament\Contracts\FieldRenderer;
 use FormSchema\Filament\Rendering\RendererContext;
 
 class LayoutFieldRenderer implements FieldRenderer
@@ -20,7 +20,7 @@ class LayoutFieldRenderer implements FieldRenderer
         $type = (string) ($field['type'] ?? 'divider');
         $key = (string) ($field['key'] ?? $type);
 
-        if ($type === 'spacing') {
+        if ('spacing' === $type) {
             $height = (int) (($field['ui']['multiline_rows'] ?? 16));
 
             return Placeholder::make($context->dot($key) . '_layout')
@@ -28,7 +28,7 @@ class LayoutFieldRenderer implements FieldRenderer
                 ->content(new HtmlString('<div style="height: ' . $height . 'px;"></div>'));
         }
 
-        if ($type === 'banner') {
+        if ('banner' === $type) {
             $banner = (array) ($field['banner_properties'] ?? []);
             $message = (string) ($banner['message'] ?? ($field['help_text'] ?? ''));
             $isHtml = (bool) ($banner['is_html'] ?? false);

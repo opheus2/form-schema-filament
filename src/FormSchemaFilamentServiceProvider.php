@@ -6,12 +6,12 @@ namespace FormSchema\Filament;
 
 use Illuminate\Support\ServiceProvider;
 use FormSchema\Filament\Schema\SchemaLoader;
-use FormSchema\Filament\Support\HttpDynamicDataResolver;
-use FormSchema\Filament\Contracts\DynamicDataResolver;
-use FormSchema\Filament\State\SubmissionPayloadExtractor;
-use FormSchema\Filament\Rendering\FilamentSchemaRenderer;
-use FormSchema\Filament\Rendering\FieldRendererRegistry;
 use FormSchema\Filament\Conditions\ConditionEngine;
+use FormSchema\Filament\Contracts\DynamicDataResolver;
+use FormSchema\Filament\Rendering\FieldRendererRegistry;
+use FormSchema\Filament\Support\HttpDynamicDataResolver;
+use FormSchema\Filament\Rendering\FilamentSchemaRenderer;
+use FormSchema\Filament\State\SubmissionPayloadExtractor;
 use FormSchema\Filament\Validation\SchemaValidatorBridge;
 use FormSchema\Filament\Validation\SubmissionValidatorBridge;
 use FormSchema\Filament\Validation\LaravelValidationRuleMapper;
@@ -34,7 +34,7 @@ class FormSchemaFilamentServiceProvider extends ServiceProvider
                 ? $packageConfig['dynamic_data_resolver']
                 : null;
 
-            if (is_string($resolverClass) && $resolverClass !== '' && class_exists($resolverClass)) {
+            if (is_string($resolverClass) && '' !== $resolverClass && class_exists($resolverClass)) {
                 $resolver = $this->app->make($resolverClass);
 
                 if ($resolver instanceof DynamicDataResolver) {
@@ -55,17 +55,15 @@ class FormSchemaFilamentServiceProvider extends ServiceProvider
             return new SubmissionPayloadExtractor($layoutFields);
         });
 
-        $this->app->singleton(FilamentSchemaRenderer::class, function (): FilamentSchemaRenderer {
-            return new FilamentSchemaRenderer(
-                loader: $this->app->make(SchemaLoader::class),
-                registry: $this->app->make(FieldRendererRegistry::class),
-                conditionEngine: $this->app->make(ConditionEngine::class),
-                dynamicDataResolver: $this->app->make(DynamicDataResolver::class),
-                ruleMapper: $this->app->make(LaravelValidationRuleMapper::class),
-                payloadExtractor: $this->app->make(SubmissionPayloadExtractor::class),
-                failOnUnsupported: (bool) config('form-schema-filament.fail_on_unsupported_fields', true),
-            );
-        });
+        $this->app->singleton(FilamentSchemaRenderer::class, fn (): FilamentSchemaRenderer => new FilamentSchemaRenderer(
+            loader: $this->app->make(SchemaLoader::class),
+            registry: $this->app->make(FieldRendererRegistry::class),
+            conditionEngine: $this->app->make(ConditionEngine::class),
+            dynamicDataResolver: $this->app->make(DynamicDataResolver::class),
+            ruleMapper: $this->app->make(LaravelValidationRuleMapper::class),
+            payloadExtractor: $this->app->make(SubmissionPayloadExtractor::class),
+            failOnUnsupported: (bool) config('form-schema-filament.fail_on_unsupported_fields', true),
+        ));
     }
 
     public function boot(): void

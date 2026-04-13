@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace FormSchema\Filament\Rendering\FieldRenderers;
 
 use Filament\Forms\Components\Field;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
-use FormSchema\Filament\Contracts\FieldRenderer;
+use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Component;
+use FormSchema\Filament\Contracts\FieldRenderer;
 use FormSchema\Filament\Rendering\RendererContext;
 
 class TextFieldRenderer implements FieldRenderer
@@ -35,7 +35,7 @@ class TextFieldRenderer implements FieldRenderer
     {
         $type = (string) ($field['type'] ?? 'text');
 
-        if ($type === 'url') {
+        if ('url' === $type) {
             return TextInput::make($context->dot((string) $field['key']))->url();
         }
 
@@ -46,7 +46,7 @@ class TextFieldRenderer implements FieldRenderer
             return Textarea::make($context->dot((string) $field['key']))->rows(max($rows, 3));
         }
 
-        if ($type === 'short-text' || $variant === 'short') {
+        if ('short-text' === $type || 'short' === $variant) {
             return TextInput::make($context->dot((string) $field['key']));
         }
 

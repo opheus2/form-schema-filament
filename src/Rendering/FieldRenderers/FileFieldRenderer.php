@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace FormSchema\Filament\Rendering\FieldRenderers;
 
 use Filament\Forms\Components\FileUpload;
-use FormSchema\Filament\Contracts\FieldRenderer;
 use Filament\Schemas\Components\Component;
+use FormSchema\Filament\Contracts\FieldRenderer;
 use FormSchema\Filament\Rendering\RendererContext;
 
 class FileFieldRenderer implements FieldRenderer
@@ -24,7 +24,7 @@ class FileFieldRenderer implements FieldRenderer
         $component = FileUpload::make($context->dot($key))
             ->multiple((bool) ($constraints['allow_multiple'] ?? false));
 
-        if (isset($constraints['accept']) && is_array($constraints['accept']) && $constraints['accept'] !== []) {
+        if (isset($constraints['accept']) && is_array($constraints['accept']) && [] !== $constraints['accept']) {
             $component->acceptedFileTypes(array_values($constraints['accept']));
         }
 

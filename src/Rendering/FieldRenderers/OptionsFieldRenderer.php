@@ -6,10 +6,10 @@ namespace FormSchema\Filament\Rendering\FieldRenderers;
 
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
-use FormSchema\Filament\Contracts\FieldRenderer;
-use Filament\Forms\Components\CheckboxList;
 use Filament\Schemas\Components\Component;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Schemas\Components\Utilities\Get;
+use FormSchema\Filament\Contracts\FieldRenderer;
 use FormSchema\Filament\Rendering\RendererContext;
 
 class OptionsFieldRenderer implements FieldRenderer
@@ -42,7 +42,7 @@ class OptionsFieldRenderer implements FieldRenderer
 
                 $resolved = $context->dynamicDataResolver->resolveDynamicOptions($field, $context->schema->schema, $state);
 
-                if (! is_array($resolved)) {
+                if ( ! is_array($resolved)) {
                     return $options;
                 }
 
@@ -65,7 +65,7 @@ class OptionsFieldRenderer implements FieldRenderer
             if (is_array($option)) {
                 $optionKey = (string) ($option['key'] ?? '');
 
-                if ($optionKey === '') {
+                if ('' === $optionKey) {
                     continue;
                 }
 

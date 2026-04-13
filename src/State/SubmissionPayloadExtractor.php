@@ -27,23 +27,24 @@ class SubmissionPayloadExtractor implements PayloadNormalizer
         foreach (($schema['form']['pages'] ?? []) as $page) {
             foreach (($page['sections'] ?? []) as $section) {
                 foreach (($section['fields'] ?? []) as $field) {
-                    if (! is_array($field)) {
+                    if ( ! is_array($field)) {
                         continue;
                     }
 
                     $key = (string) ($field['key'] ?? '');
                     $type = (string) ($field['type'] ?? '');
 
-                    if ($key === '' || in_array($type, $this->layoutTypes, true)) {
+                    if ('' === $key || in_array($type, $this->layoutTypes, true)) {
                         continue;
                     }
 
                     if (array_key_exists($key, $state)) {
                         $payload[$key] = $state[$key];
+
                         continue;
                     }
 
-                    if ($type === 'hidden' && array_key_exists('default', $field)) {
+                    if ('hidden' === $type && array_key_exists('default', $field)) {
                         $payload[$key] = $field['default'];
                     }
                 }

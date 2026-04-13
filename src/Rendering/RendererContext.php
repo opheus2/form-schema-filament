@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace FormSchema\Filament\Rendering;
 
-use FormSchema\Filament\Contracts\DynamicDataResolver;
 use FormSchema\Filament\Schema\SchemaInput;
 use FormSchema\Filament\Conditions\ConditionEngine;
+use FormSchema\Filament\Contracts\DynamicDataResolver;
 
 class RendererContext
 {

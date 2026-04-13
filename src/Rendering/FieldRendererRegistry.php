@@ -6,20 +6,20 @@ namespace FormSchema\Filament\Rendering;
 
 use InvalidArgumentException;
 use FormSchema\Filament\Contracts\FieldRenderer;
-use FormSchema\Filament\Rendering\FieldRenderers\TextFieldRenderer;
-use FormSchema\Filament\Rendering\FieldRenderers\FileFieldRenderer;
 use FormSchema\Filament\Rendering\FieldRenderers\TagFieldRenderer;
 use FormSchema\Filament\Rendering\FieldRenderers\DateFieldRenderer;
-use FormSchema\Filament\Rendering\FieldRenderers\LayoutFieldRenderer;
+use FormSchema\Filament\Rendering\FieldRenderers\FileFieldRenderer;
+use FormSchema\Filament\Rendering\FieldRenderers\TextFieldRenderer;
 use FormSchema\Filament\Rendering\FieldRenderers\EmailFieldRenderer;
 use FormSchema\Filament\Rendering\FieldRenderers\PhoneFieldRenderer;
 use FormSchema\Filament\Rendering\FieldRenderers\HiddenFieldRenderer;
+use FormSchema\Filament\Rendering\FieldRenderers\LayoutFieldRenderer;
 use FormSchema\Filament\Rendering\FieldRenderers\NumberFieldRenderer;
 use FormSchema\Filament\Rendering\FieldRenderers\RatingFieldRenderer;
-use FormSchema\Filament\Rendering\FieldRenderers\OptionsFieldRenderer;
-use FormSchema\Filament\Rendering\FieldRenderers\BooleanFieldRenderer;
 use FormSchema\Filament\Rendering\FieldRenderers\AddressFieldRenderer;
+use FormSchema\Filament\Rendering\FieldRenderers\BooleanFieldRenderer;
 use FormSchema\Filament\Rendering\FieldRenderers\CountryFieldRenderer;
+use FormSchema\Filament\Rendering\FieldRenderers\OptionsFieldRenderer;
 
 class FieldRendererRegistry
 {

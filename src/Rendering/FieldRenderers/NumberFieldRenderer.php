@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace FormSchema\Filament\Rendering\FieldRenderers;
 
 use Filament\Forms\Components\TextInput;
-use FormSchema\Filament\Contracts\FieldRenderer;
 use Filament\Schemas\Components\Component;
+use FormSchema\Filament\Contracts\FieldRenderer;
 use FormSchema\Filament\Rendering\RendererContext;
 
 class NumberFieldRenderer implements FieldRenderer

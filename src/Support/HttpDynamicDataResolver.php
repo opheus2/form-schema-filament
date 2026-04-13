@@ -4,23 +4,24 @@ declare(strict_types=1);
 
 namespace FormSchema\Filament\Support;
 
+use Throwable;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
 use FormSchema\Filament\Contracts\DynamicDataResolver;
 
 class HttpDynamicDataResolver implements DynamicDataResolver
 {
-    public function resolveDynamicOptions(array $field, array $schema, array $state): array|null
+    public function resolveDynamicOptions(array $field, array $schema, array $state): ?array
     {
         $source = (array) data_get($field, 'option_properties.source', []);
 
-        if (! $this->isEnabled($source) || ! $this->passesWhen((array) ($source['when'] ?? []), $state)) {
+        if ( ! $this->isEnabled($source) || ! $this->passesWhen((array) ($source['when'] ?? []), $state)) {
             return null;
         }
 
         $response = $this->request($source, $state);
 
-        if (! is_array($response)) {
+        if ( ! is_array($response)) {
             return null;
         }
 
@@ -31,20 +32,20 @@ class HttpDynamicDataResolver implements DynamicDataResolver
         /** @var mixed $items */
         $items = data_get($response, $itemsPath);
 
-        if (! is_array($items)) {
+        if ( ! is_array($items)) {
             return [];
         }
 
         $resolved = [];
 
         foreach ($items as $item) {
-            if (! is_array($item)) {
+            if ( ! is_array($item)) {
                 continue;
             }
 
             $key = data_get($item, $keyPath);
 
-            if (! is_scalar($key) || (string) $key === '') {
+            if ( ! is_scalar($key) || '' === (string) $key) {
                 continue;
             }
 
@@ -59,7 +60,7 @@ class HttpDynamicDataResolver implements DynamicDataResolver
     {
         $config = (array) ($field['autofill'] ?? []);
 
-        if (! $this->isEnabled($config) || ! $this->passesWhen((array) ($config['when'] ?? []), $state)) {
+        if ( ! $this->isEnabled($config) || ! $this->passesWhen((array) ($config['when'] ?? []), $state)) {
             return null;
         }
 
@@ -72,7 +73,7 @@ class HttpDynamicDataResolver implements DynamicDataResolver
     {
         $config = (array) ($field['validation_response'] ?? []);
 
-        if (! $this->isEnabled($config) || ! $this->passesWhen((array) ($config['when'] ?? []), $state)) {
+        if ( ! $this->isEnabled($config) || ! $this->passesWhen((array) ($config['when'] ?? []), $state)) {
             return null;
         }
 
@@ -90,28 +91,28 @@ class HttpDynamicDataResolver implements DynamicDataResolver
     {
         $endpoint = (string) ($config['endpoint'] ?? '');
 
-        if ($endpoint === '') {
+        if ('' === $endpoint) {
             return null;
         }
 
-        $method = strtoupper((string) ($config['method'] ?? 'GET'));
+        $method = mb_strtoupper((string) ($config['method'] ?? 'GET'));
         $headers = $this->pairListToMap((array) ($config['headers'] ?? []), $state);
         $params = $this->pairListToMap((array) ($config['params'] ?? []), $state);
 
         try {
             $request = Http::withHeaders($headers);
-            $response = $method === 'POST'
+            $response = 'POST' === $method
                 ? $request->post($endpoint, $params)
                 : $request->get($endpoint, $params);
 
-            if (! $response->successful()) {
+            if ( ! $response->successful()) {
                 return null;
             }
 
             $json = $response->json();
 
             return is_array($json) ? $json : null;
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             report($exception);
 
             return null;
@@ -128,13 +129,13 @@ class HttpDynamicDataResolver implements DynamicDataResolver
         $result = [];
 
         foreach ($pairs as $pair) {
-            if (! is_array($pair)) {
+            if ( ! is_array($pair)) {
                 continue;
             }
 
             $key = (string) ($pair['key'] ?? '');
 
-            if ($key === '') {
+            if ('' === $key) {
                 continue;
             }
 
@@ -149,11 +150,11 @@ class HttpDynamicDataResolver implements DynamicDataResolver
      */
     private function resolveValue(mixed $value, array $state): mixed
     {
-        if (! is_string($value)) {
+        if ( ! is_string($value)) {
             return $value;
         }
 
-        if (! preg_match('/^\{field:([^}]+)\}$/', $value, $matches)) {
+        if ( ! preg_match('/^\{field:([^}]+)\}$/', $value, $matches)) {
             return $value;
         }
 
@@ -177,14 +178,14 @@ class HttpDynamicDataResolver implements DynamicDataResolver
         $allConditions = Arr::where((array) ($when['all'] ?? []), fn (mixed $item): bool => is_array($item));
 
         foreach ($allConditions as $condition) {
-            if (! $this->passesCondition((array) $condition, $state)) {
+            if ( ! $this->passesCondition((array) $condition, $state)) {
                 return false;
             }
         }
 
         $anyConditions = Arr::where((array) ($when['any'] ?? []), fn (mixed $item): bool => is_array($item));
 
-        if ($anyConditions === []) {
+        if ([] === $anyConditions) {
             return true;
         }
 
@@ -205,7 +206,7 @@ class HttpDynamicDataResolver implements DynamicDataResolver
     {
         $key = (string) ($condition['key'] ?? '');
 
-        if ($key === '') {
+        if ('' === $key) {
             return true;
         }
 
@@ -214,8 +215,8 @@ class HttpDynamicDataResolver implements DynamicDataResolver
         $expected = $condition['value'] ?? null;
 
         return match ($operator) {
-            'is' => $actual == $expected,
-            'is_not' => $actual != $expected,
+            'is' => $actual === $expected,
+            'is_not' => $actual !== $expected,
             'contains' => is_string($actual) && is_string($expected) && str_contains($actual, $expected),
             'not_contains' => is_string($actual) && is_string($expected) && ! str_contains($actual, $expected),
             'starts_with' => is_string($actual) && is_string($expected) && str_starts_with($actual, $expected),

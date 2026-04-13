@@ -32,15 +32,15 @@ trait AppliesCommonAttributes
 
                 return $context->conditionEngine->isFieldVisible($field, $context->schema, $state);
             })
-            ->afterStateHydrated(function (Field $component, mixed $state) use ($field, $fieldKey): void {
-                if ($state !== null || ! array_key_exists('default', $field)) {
+            ->afterStateHydrated(function (Field $component, mixed $state) use ($field): void {
+                if (null !== $state || ! array_key_exists('default', $field)) {
                     return;
                 }
 
                 $component->state($field['default']);
             })
             ->afterStateUpdated(function (Get $get, Set $set) use ($field, $fieldKey, $context): void {
-                if ($fieldKey === '') {
+                if ('' === $fieldKey) {
                     return;
                 }
 
@@ -84,25 +84,25 @@ trait AppliesCommonAttributes
      */
     private function applyMapTargets(?array $response, array $mappings, Set $set, RendererContext $context): void
     {
-        if (! is_array($response) || $mappings === []) {
+        if ( ! is_array($response) || [] === $mappings) {
             return;
         }
 
         foreach ($mappings as $mapping) {
-            if (! is_array($mapping)) {
+            if ( ! is_array($mapping)) {
                 continue;
             }
 
             $target = (string) ($mapping['target'] ?? '');
             $path = (string) ($mapping['path'] ?? '');
 
-            if ($target === '' || $path === '' || str_contains($target, ':')) {
+            if ('' === $target || '' === $path || str_contains($target, ':')) {
                 continue;
             }
 
             $value = data_get($response, $path);
 
-            if ($value === null) {
+            if (null === $value) {
                 continue;
             }
 
@@ -117,11 +117,11 @@ trait AppliesCommonAttributes
     {
         $ui = (array) ($field['ui'] ?? []);
 
-        if (is_string($ui['prefix'] ?? null) && $ui['prefix'] !== '' && method_exists($component, 'prefix')) {
+        if (is_string($ui['prefix'] ?? null) && '' !== $ui['prefix'] && method_exists($component, 'prefix')) {
             $component->prefix($ui['prefix']);
         }
 
-        if (is_string($ui['suffix'] ?? null) && $ui['suffix'] !== '' && method_exists($component, 'suffix')) {
+        if (is_string($ui['suffix'] ?? null) && '' !== $ui['suffix'] && method_exists($component, 'suffix')) {
             $component->suffix($ui['suffix']);
         }
 

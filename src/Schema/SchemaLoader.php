@@ -13,14 +13,14 @@ class SchemaLoader
      */
     public function fromCanonical(array $schema): SchemaInput
     {
-        if (! isset($schema['form']) || ! is_array($schema['form'])) {
+        if ( ! isset($schema['form']) || ! is_array($schema['form'])) {
             throw new InvalidSchemaException('Schema is missing a form envelope.');
         }
 
         /** @var array<int, array<string, mixed>> $pages */
         $pages = is_array($schema['form']['pages'] ?? null) ? array_values($schema['form']['pages']) : [];
 
-        if ($pages === []) {
+        if ([] === $pages) {
             throw new InvalidSchemaException('Schema has no pages to render.');
         }
 
@@ -31,7 +31,7 @@ class SchemaLoader
                 foreach (($section['fields'] ?? []) as $field) {
                     $key = $field['key'] ?? null;
 
-                    if (! is_string($key) || $key === '') {
+                    if ( ! is_string($key) || '' === $key) {
                         continue;
                     }
 
